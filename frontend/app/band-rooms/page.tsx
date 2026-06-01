@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import AppShell from "@/components/AppShell";
 import {
   bandRoom,
@@ -21,7 +24,12 @@ import {
   Smile,
   ShieldCheck,
   ChevronRight,
+  PlayCircle,
+  Loader2,
+  Server,
+  CheckCheck,
 } from "lucide-react";
+import { getDownloadReportUrl, runGovernanceWorkflow } from "@/lib/api";
 
 function RiskBadge({ risk }: { risk: string }) {
   return (
@@ -105,7 +113,46 @@ function DiscussionMessage({ item }: { item: any }) {
   );
 }
 
+function LiveFindingCard({ finding }: { finding: any }) {
+  return (
+    <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-bold text-slate-950">{finding.agent}</p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            {finding.finding}
+          </p>
+        </div>
+
+        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600">
+          {finding.status}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function BandRoomsPage() {
+  const [workflowResult, setWorkflowResult] = useState<any>(null);
+  const [running, setRunning] = useState(false);
+  const [workflowError, setWorkflowError] = useState("");
+
+  async function handleRunWorkflow() {
+    setRunning(true);
+    setWorkflowError("");
+
+    try {
+      const data = await runGovernanceWorkflow();
+      setWorkflowResult(data);
+    } catch (error) {
+      setWorkflowError(
+        "Workflow run failed. Check backend server and NEXT_PUBLIC_API_URL."
+      );
+    } finally {
+      setRunning(false);
+    }
+  }
+
   return (
     <AppShell>
       <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -131,16 +178,115 @@ export default function BandRoomsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-900 hover:bg-slate-50">
+          <button
+            onClick={handleRunWorkflow}
+            disabled={running}
+            className="flex h-11 items-center gap-2 rounded-xl bg-teal-700 px-4 text-sm font-bold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {running ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <PlayCircle size={18} />
+            )}
+            {running ? "Running..." : "Run Live Band Workflow"}
+          </button>
+
+          <a
+            href={getDownloadReportUrl()}
+            target="_blank"
+            rel="noreferrer"
+            className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-900 hover:bg-slate-50"
+          >
             <ArrowDownToLine size={18} />
             Download Report
-          </button>
+          </a>
 
           <button className="grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
             <MoreVertical size={18} />
           </button>
         </div>
       </div>
+
+      {workflowError && (
+        <section className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-600">
+          {workflowError}
+        </section>
+      )}
+
+      {workflowResult && (
+        <section className="mb-6 rounded-2xl border border-teal-100 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Server size={20} className="text-teal-700" />
+                <h2 className="text-lg font-bold text-slate-950">
+                  Live Band Workflow Result
+                </h2>
+              </div>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Backend workflow completed and returned Band collaboration
+                output.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600">
+                Mode: {workflowResult.band_mode}
+              </span>
+              <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-bold text-teal-700">
+                Room: {workflowResult.band_room_id}
+              </span>
+              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600">
+                Decision: {workflowResult.final_decision?.decision}
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 gap-4 2xl:grid-cols-3">
+            <div className="rounded-2xl bg-slate-50 p-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                Final Risk
+              </p>
+              <p className="mt-2 text-xl font-bold text-red-600">
+                {workflowResult.final_decision?.risk} ·{" "}
+                {workflowResult.final_decision?.risk_score}
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-slate-50 p-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                Safe Alternative
+              </p>
+              <p className="mt-2 font-bold text-slate-950">
+                {workflowResult.final_decision?.safe_alternative}
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-emerald-50 p-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-emerald-600">
+                Judge Proof
+              </p>
+              <p className="mt-2 flex items-center gap-2 font-bold text-slate-950">
+                <CheckCheck size={18} className="text-emerald-600" />
+                Agents posted findings to Band workflow
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <h3 className="mb-3 font-bold text-slate-950">
+              Live Agent Findings
+            </h3>
+
+            <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+              {workflowResult.agent_findings?.map((finding: any) => (
+                <LiveFindingCard key={finding.agent} finding={finding} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="rounded-2xl border border-slate-100 bg-white shadow-sm">
         <div className="flex flex-col gap-5 p-6 2xl:flex-row 2xl:items-center 2xl:justify-between">
