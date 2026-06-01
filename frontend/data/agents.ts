@@ -1,0 +1,307 @@
+import {
+  Bot,
+  ShieldCheck,
+  ClipboardCheck,
+  UserCheck,
+  LockKeyhole,
+  ShieldAlert,
+  ScrollText,
+  Users,
+  Gavel,
+  Activity,
+  Clock3,
+  CheckCircle2,
+  AlertTriangle,
+  MessageSquareText,
+  Network,
+  Zap,
+  BarChart3,
+} from "lucide-react";
+
+export const agentStats = [
+  {
+    label: "Total Agents",
+    value: "8",
+    sub: "Specialist governance agents",
+    icon: Bot,
+    color: "blue",
+  },
+  {
+    label: "Active Agents",
+    value: "7",
+    sub: "Currently online",
+    icon: Activity,
+    color: "green",
+  },
+  {
+    label: "Tasks Completed",
+    value: "1,284",
+    sub: "+18% this week",
+    icon: CheckCircle2,
+    color: "emerald",
+  },
+  {
+    label: "Avg Response",
+    value: "1.8s",
+    sub: "Across all agents",
+    icon: Clock3,
+    color: "purple",
+  },
+  {
+    label: "Escalations",
+    value: "34",
+    sub: "Human-in-loop",
+    icon: AlertTriangle,
+    color: "amber",
+  },
+];
+
+export const agents = [
+  {
+    name: "Request Intake Agent",
+    initials: "RI",
+    role: "Captures and normalizes incoming enterprise requests.",
+    status: "Online",
+    health: "Healthy",
+    tasks: 248,
+    successRate: "99%",
+    responseTime: "1.2s",
+    icon: MessageSquareText,
+  },
+  {
+    name: "Policy Review Agent",
+    initials: "PR",
+    role: "Matches requests against company governance policies.",
+    status: "Online",
+    health: "Healthy",
+    tasks: 226,
+    successRate: "98%",
+    responseTime: "1.6s",
+    icon: ClipboardCheck,
+  },
+  {
+    name: "Permission Agent",
+    initials: "PA",
+    role: "Checks requester role, department, and permission scope.",
+    status: "Online",
+    health: "Healthy",
+    tasks: 214,
+    successRate: "97%",
+    responseTime: "1.4s",
+    icon: UserCheck,
+  },
+  {
+    name: "Data Sensitivity Agent",
+    initials: "DS",
+    role: "Classifies PII, confidential, financial, and employee data.",
+    status: "Online",
+    health: "Healthy",
+    tasks: 198,
+    successRate: "99%",
+    responseTime: "1.9s",
+    icon: LockKeyhole,
+  },
+  {
+    name: "Security Risk Agent",
+    initials: "SR",
+    role: "Scores risk and recommends approve, reject, or escalate.",
+    status: "Online",
+    health: "Healthy",
+    tasks: 176,
+    successRate: "96%",
+    responseTime: "2.1s",
+    icon: ShieldAlert,
+  },
+  {
+    name: "Audit Evidence Agent",
+    initials: "AE",
+    role: "Creates evidence packages and audit-ready logs.",
+    status: "Online",
+    health: "Healthy",
+    tasks: 142,
+    successRate: "98%",
+    responseTime: "2.4s",
+    icon: ScrollText,
+  },
+  {
+    name: "Human Escalation Agent",
+    initials: "HE",
+    role: "Routes risky actions to managers, security, and DPO reviewers.",
+    status: "Online",
+    health: "Healthy",
+    tasks: 84,
+    successRate: "95%",
+    responseTime: "2.6s",
+    icon: Users,
+  },
+  {
+    name: "Final Decision Agent",
+    initials: "FD",
+    role: "Combines agent findings and approval rules into a final decision.",
+    status: "Standby",
+    health: "Waiting",
+    tasks: 96,
+    successRate: "97%",
+    responseTime: "1.7s",
+    icon: Gavel,
+  },
+];
+
+export const agentWorkflow = [
+  {
+    step: "1",
+    title: "Request Intake",
+    agent: "Request Intake Agent",
+    status: "Completed",
+  },
+  {
+    step: "2",
+    title: "Policy Match",
+    agent: "Policy Review Agent",
+    status: "Completed",
+  },
+  {
+    step: "3",
+    title: "Permission Check",
+    agent: "Permission Agent",
+    status: "Completed",
+  },
+  {
+    step: "4",
+    title: "Data Classification",
+    agent: "Data Sensitivity Agent",
+    status: "Completed",
+  },
+  {
+    step: "5",
+    title: "Risk Scoring",
+    agent: "Security Risk Agent",
+    status: "In Progress",
+  },
+  {
+    step: "6",
+    title: "Human Escalation",
+    agent: "Human Escalation Agent",
+    status: "Pending",
+  },
+  {
+    step: "7",
+    title: "Decision",
+    agent: "Final Decision Agent",
+    status: "Pending",
+  },
+  {
+    step: "8",
+    title: "Audit Evidence",
+    agent: "Audit Evidence Agent",
+    status: "Pending",
+  },
+];
+
+export const agentActivity = [
+  {
+    agent: "Policy Review Agent",
+    event: "Matched request against DP-03 Data Export Policy.",
+    time: "1m ago",
+  },
+  {
+    agent: "Permission Agent",
+    event: "Detected role mismatch for Marketing Intern.",
+    time: "2m ago",
+  },
+  {
+    agent: "Data Sensitivity Agent",
+    event: "Classified customer emails as PII.",
+    time: "3m ago",
+  },
+  {
+    agent: "Security Risk Agent",
+    event: "Generated high risk score: 85/100.",
+    time: "4m ago",
+  },
+];
+
+export const performanceMetrics = [
+  {
+    label: "Policy Match Accuracy",
+    value: "98%",
+    icon: ShieldCheck,
+  },
+  {
+    label: "Decision Consistency",
+    value: "96%",
+    icon: Gavel,
+  },
+  {
+    label: "Context Handoff Success",
+    value: "99%",
+    icon: Network,
+  },
+  {
+    label: "Automation Coverage",
+    value: "82%",
+    icon: Zap,
+  },
+];
+
+export const performanceRows = [
+  {
+    agent: "Request Intake Agent",
+    completed: 248,
+    avgTime: "1.2s",
+    success: "99%",
+    escalations: 0,
+  },
+  {
+    agent: "Policy Review Agent",
+    completed: 226,
+    avgTime: "1.6s",
+    success: "98%",
+    escalations: 8,
+  },
+  {
+    agent: "Permission Agent",
+    completed: 214,
+    avgTime: "1.4s",
+    success: "97%",
+    escalations: 11,
+  },
+  {
+    agent: "Data Sensitivity Agent",
+    completed: 198,
+    avgTime: "1.9s",
+    success: "99%",
+    escalations: 14,
+  },
+  {
+    agent: "Security Risk Agent",
+    completed: 176,
+    avgTime: "2.1s",
+    success: "96%",
+    escalations: 21,
+  },
+  {
+    agent: "Audit Evidence Agent",
+    completed: 142,
+    avgTime: "2.4s",
+    success: "98%",
+    escalations: 0,
+  },
+  {
+    agent: "Human Escalation Agent",
+    completed: 84,
+    avgTime: "2.6s",
+    success: "95%",
+    escalations: 34,
+  },
+  {
+    agent: "Final Decision Agent",
+    completed: 96,
+    avgTime: "1.7s",
+    success: "97%",
+    escalations: 6,
+  },
+];
+
+
+
