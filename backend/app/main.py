@@ -281,6 +281,36 @@ def _not_real_response(message: str, status_code: int = 503, extra: dict[str, An
     return JSONResponse(status_code=status_code, content=content)
 
 
+def _demo_live_proof_response() -> JSONResponse:
+    """
+    Clear demo/fallback shape for non-production or local demo mode.
+
+    This is intentionally separate from real Band proof.
+    It never claims band_mode='real'.
+    """
+    return JSONResponse(
+        status_code=200,
+        content={
+            "band_mode": "demo",
+            "fallback_used": True,
+            "band_api_verified": False,
+            "band_room_created": False,
+            "band_room_id": "demo-room-id",
+            "messages_posted": 8,
+            "agents_collaborated": 8,
+            "context_retrieved": True,
+            "human_escalation_triggered": True,
+            "final_decision_generated_from_band_history": True,
+            "audit_report_generated": True,
+            "proof_record_type": "demo_fallback",
+            "demo_notice": (
+                "Demo fallback is active because BAND_ENABLE_REAL_API is false. "
+                "This is not real Band proof."
+            ),
+        },
+    )
+
+
 # -----------------------------------------------------------------------------
 # Health endpoints
 # -----------------------------------------------------------------------------
@@ -549,7 +579,7 @@ async def get_band_live_proof():
     settings = _band_settings()
 
     if not settings["enable_real_api"]:
-        return _not_real_response("BAND_ENABLE_REAL_API is not set to true.")
+        return _demo_live_proof_response()
 
     if not settings["api_key"] or not settings["agent_id"]:
         return _not_real_response("BAND_AGENT_API_KEY or BAND_AGENT_ID is missing.")
