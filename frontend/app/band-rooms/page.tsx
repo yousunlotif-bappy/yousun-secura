@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
 import {
   bandRoom,
@@ -29,7 +29,12 @@ import {
   Server,
   CheckCheck,
 } from "lucide-react";
-import { getDownloadReportUrl, runGovernanceWorkflow } from "@/lib/api";
+import {
+  getBandLiveProof,
+  getDownloadReportUrl,
+  runGovernanceWorkflow,
+  type BandLiveProof,
+} from "@/lib/api";
 
 function RiskBadge({ risk }: { risk: string }) {
   return (
@@ -132,10 +137,228 @@ function LiveFindingCard({ finding }: { finding: any }) {
   );
 }
 
+function YesNoBadge({ value }: { value: boolean }) {
+  return (
+    <span
+      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+        value
+          ? "bg-emerald-100 text-emerald-700"
+          : "bg-red-100 text-red-700"
+      }`}
+    >
+      {value ? "YES" : "NO"}
+    </span>
+  );
+}
+
+function JudgeProofPanel({
+  proof,
+  loading,
+  error,
+}: {
+  proof: BandLiveProof | null;
+  loading: boolean;
+  error: string;
+}) {
+  const isReal = proof?.band_mode === "real" && proof?.fallback_used === false;
+
+  return (
+    <section className="mb-6 rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-slate-50 p-6 shadow-sm">
+      <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-700">
+            Judge Proof Panel
+          </p>
+          <h2 className="mt-2 text-2xl font-bold text-slate-950">
+            Real Band Collaboration Evidence
+          </h2>
+          <p className="mt-1 text-sm text-slate-600">
+            This panel reads live proof from the backend Band endpoint and
+            clearly separates real mode from demo fallback.
+          </p>
+        </div>
+
+        <div
+          className={`rounded-2xl px-5 py-3 text-center ${
+            isReal ? "bg-emerald-600 text-white" : "bg-amber-500 text-white"
+          }`}
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest">
+            Band Mode
+          </p>
+          <p className="text-2xl font-black">
+            {loading ? "CHECKING" : proof?.band_mode?.toUpperCase() || "UNKNOWN"}
+          </p>
+        </div>
+      </div>
+
+      {loading && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm font-medium text-slate-600">
+          Checking real Band proof...
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
+          {error}
+        </div>
+      )}
+
+      {proof && (
+        <>
+          <div className="grid gap-3 md:grid-cols-4">
+            <div className="rounded-2xl border bg-white p-4">
+              <p className="text-xs font-semibold uppercase text-slate-500">
+                Fallback Used
+              </p>
+              <p className="mt-2 text-xl font-bold text-slate-950">
+                {proof.fallback_used ? "YES" : "NO"}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-4">
+              <p className="text-xs font-semibold uppercase text-slate-500">
+                Band Room ID
+              </p>
+              <p className="mt-2 break-all text-sm font-bold text-slate-950">
+                {proof.band_room_id || "Not created"}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-4">
+              <p className="text-xs font-semibold uppercase text-slate-500">
+                Messages Posted
+              </p>
+              <p className="mt-2 text-2xl font-black text-slate-950">
+                {proof.messages_posted}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-4">
+              <p className="text-xs font-semibold uppercase text-slate-500">
+                Agents Collaborated
+              </p>
+              <p className="mt-2 text-2xl font-black text-slate-950">
+                {proof.agents_collaborated}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-4">
+              <p className="text-xs font-semibold uppercase text-slate-500">
+                Context Retrieved
+              </p>
+              <div className="mt-2">
+                <YesNoBadge value={proof.context_retrieved} />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-4">
+              <p className="text-xs font-semibold uppercase text-slate-500">
+                Human Escalation
+              </p>
+              <div className="mt-2">
+                <YesNoBadge value={proof.human_escalation_triggered} />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-4">
+              <p className="text-xs font-semibold uppercase text-slate-500">
+                Final Decision From History
+              </p>
+              <div className="mt-2">
+                <YesNoBadge
+                  value={proof.final_decision_generated_from_band_history}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-4">
+              <p className="text-xs font-semibold uppercase text-slate-500">
+                Audit Report Generated
+              </p>
+              <div className="mt-2">
+                <YesNoBadge value={proof.audit_report_generated} />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-emerald-100 bg-white p-5">
+            <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-700">
+              Collaboration Checklist
+            </h3>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              {[
+                "Real Band room created",
+                "8 agents posted structured findings",
+                "Later agents used previous findings as shared context",
+                "Human escalation triggered",
+                "Final decision generated from Band history",
+                "Audit report generated from collaboration trail",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-2 text-sm font-medium text-slate-700"
+                >
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+
+            {proof.demo_notice && (
+              <p className="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-700">
+                {proof.demo_notice}
+              </p>
+            )}
+
+            {proof.proof_note && (
+              <p className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">
+                {proof.proof_note}
+              </p>
+            )}
+
+            {proof.error && (
+              <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+                {proof.error}
+              </p>
+            )}
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+
 export default function BandRoomsPage() {
   const [workflowResult, setWorkflowResult] = useState<any>(null);
   const [running, setRunning] = useState(false);
   const [workflowError, setWorkflowError] = useState("");
+  const [liveProof, setLiveProof] = useState<BandLiveProof | null>(null);
+  const [proofLoading, setProofLoading] = useState(true);
+  const [proofError, setProofError] = useState("");
+
+
+  useEffect(() => {
+    async function loadLiveProof() {
+      setProofLoading(true);
+      setProofError("");
+
+      try {
+        const data = await getBandLiveProof();
+        setLiveProof(data);
+      } catch (error) {
+        setProofError(
+          "Live Band proof failed. Check Render backend, Band API key, and /api/band/live-proof."
+        );
+      } finally {
+        setProofLoading(false);
+      }
+    }
+
+    loadLiveProof();
+  }, []);
 
   async function handleRunWorkflow() {
     setRunning(true);
@@ -206,6 +429,12 @@ export default function BandRoomsPage() {
           </button>
         </div>
       </div>
+
+      <JudgeProofPanel
+        proof={liveProof}
+        loading={proofLoading}
+        error={proofError}
+      />
 
       {workflowError && (
         <section className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-600">
@@ -594,5 +823,3 @@ export default function BandRoomsPage() {
     </AppShell>
   );
 }
-
-
