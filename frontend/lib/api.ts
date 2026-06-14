@@ -20,6 +20,23 @@ export type BandLiveProof = {
   error?: string;
 };
 
+export type GovernanceWorkflowResult = {
+  band_mode?: "real" | "demo" | "not_real";
+  fallback_used?: boolean;
+  band_room_id?: string | null;
+  messages_posted?: number;
+  agents_collaborated?: number;
+  context_retrieved?: boolean;
+  human_escalation_triggered?: boolean;
+  final_decision_generated_from_band_history?: boolean;
+  audit_report_generated?: boolean;
+  final_decision?: string;
+  risk_level?: string;
+  risk_score?: number;
+  error?: string;
+  [key: string]: unknown;
+};
+
 async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
 
@@ -33,22 +50,27 @@ async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(errorText || `API request failed with ${response.status}`);
+
+    throw new Error(
+      errorText || `API request failed with status ${response.status}`
+    );
   }
 
-  return response.json();
+  return response.json() as Promise<T>;
 }
 
 export async function getBandLiveProof(): Promise<BandLiveProof> {
   return fetchJson<BandLiveProof>("/api/band/live-proof");
 }
 
-export async function runGovernanceWorkflow() {
-  return fetchJson("/api/run-governance-workflow", {
+export async function runGovernanceWorkflow(): Promise<GovernanceWorkflowResult> {
+  return fetchJson<GovernanceWorkflowResult>("/api/run-governance-workflow", {
     method: "POST",
   });
 }
 
-export function getDownloadReportUrl() {
+export function getDownloadReportUrl(): string {
   return `${API_BASE_URL}/api/download-report`;
 }
+
+
